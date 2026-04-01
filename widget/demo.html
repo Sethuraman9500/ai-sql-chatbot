@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chinook Music Store — AI Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: #08080f;
+      color: #e4e4f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+    }
+
+    .page { width: 100%; max-width: 860px; }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: #6366f1;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 18px; font-weight: 600; color: #f1f1f3; }
+    .logo-sub { font-size: 12px; color: #555570; margin-top: 1px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: #22c55e;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      background: #12121c;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    .stat-value { font-size: 26px; font-weight: 600; color: #f1f1f3; }
+    .stat-label { font-size: 12px; color: #555570; margin-top: 4px; }
+
+    /* ── Prompts ── */
+    .prompts {
+      background: #12121c;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+    }
+    .prompts-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #555570;
+      margin-bottom: 12px;
+    }
+    .prompt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: #a5a8ff;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      background: rgba(99,102,241,0.25);
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    /* ── Chat container ── */
+    #chat-container {
+      width: 100%;
+      height: 560px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    #db-chatbot { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">🎵</div>
+        <div>
+          <div class="logo-text">Chinook Analytics</div>
+          <div class="logo-sub">Natural language · AI powered</div>
+        </div>
+      </div>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Live
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">3,503</div>
+        <div class="stat-label">Tracks in database</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">275</div>
+        <div class="stat-label">Artists</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">11</div>
+        <div class="stat-label">Linked tables</div>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="prompts">
+      <div class="prompts-label">Try asking</div>
+      <div class="prompt-chips">
+        <button class="chip" onclick="ask('How many artists are there?')">Artist count</button>
+        <button class="chip" onclick="ask('Top 5 best selling tracks')">Top tracks</button>
+        <button class="chip" onclick="ask('Revenue by genre')">By genre</button>
+        <button class="chip" onclick="ask('Show all Led Zeppelin albums')">Led Zeppelin</button>
+        <button class="chip" onclick="ask('Which country has the most customers?')">Top country</button>
+        <button class="chip" onclick="ask('Average invoice total')">Avg invoice</button>
+      </div>
+    </div>
+
+    <div id="chat-container">
+      <div id="db-chatbot"></div>
+    </div>
+
+  </div>
+
+  <script>
+    window.DB_CHATBOT_CONFIG = {
+      apiUrl: window.location.origin,
+      title: 'Music Store Assistant',
+      position: 'inline',
+      accentColor: '#6366f1',
+      suggestions: ['How many artists?', 'Top 5 tracks', 'Revenue by genre']
+    };
+    function ask(q) {
+      const inp = document.querySelector('#dbc-input');
+      if (inp) {
+        inp.value = q;
+        inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      }
+    }
+  </script>
+  <script src="/static/chatbot.js"></script>
+</body>
+</html>
